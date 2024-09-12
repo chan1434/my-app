@@ -2,19 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 
 export default function App() {
-  const [time, setTime] = useState(new Date());
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(new Date());
+      setCurrentDateTime(new Date());
     }, 1000);
     return () => clearInterval(interval); // Cleanup the interval on component unmount
   }, []);
 
+  const formattedDate = currentDateTime.toLocaleDateString();
+  const formattedTime = currentDateTime.toLocaleTimeString();
+
   return (
     <View style={styles.container}>
+      <Text style={styles.dateText}>
+        {formattedDate}
+      </Text>
       <Text style={styles.timeText}>
-        {time.toLocaleTimeString()}
+        {formattedTime}
       </Text>
     </View>
   );
@@ -26,6 +32,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  dateText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   timeText: {
     fontSize: 48,
