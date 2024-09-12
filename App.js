@@ -1,63 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, TextInput, Button, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { Text, View, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
 export default function App() {
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
-  const [alarmTime, setAlarmTime] = useState(''); // Stores user input for the alarm time
-  const [alarmSet, setAlarmSet] = useState(false); // Tracks if the alarm is set
-  const [alarmTriggered, setAlarmTriggered] = useState(false); // Prevents multiple alerts
+  const [task, setTask] = useState(''); // State for the input task
+  const [tasks, setTasks] = useState([]); // State for the list of tasks
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentDateTime(new Date());
-    }, 1000);
-
-    // Check if alarm should be triggered
-    if (alarmSet && !alarmTriggered) {
-      const currentFormattedTime = currentDateTime.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false, // Optional: Change to true for 12-hour format
-      });
-
-      if (currentFormattedTime === alarmTime) {
-        Alert.alert('Alarm', 'The alarm is ringing!');
-        setAlarmTriggered(true); // Ensure the alert triggers only once
-      }
-    }
-
-    return () => clearInterval(interval); // Cleanup the interval on component unmount
-  }, [currentDateTime, alarmTime, alarmSet, alarmTriggered]);
-
-  const handleSetAlarm = () => {
-    if (alarmTime) {
-      setAlarmSet(true);
-      setAlarmTriggered(false); // Reset the triggered state in case of re-setting the alarm
-    } else {
-      Alert.alert('Error', 'Please enter a valid alarm time.');
+  // Function to handle adding a new task
+  const handleAddTask = () => {
+    if (task.length > 0) {
+      setTasks([...tasks, { key: Math.random().toString(), value: task }]); // Add task to the task list
+      setTask(''); // Clear the input after adding
     }
   };
 
-  const formattedDate = currentDateTime.toLocaleDateString();
-  const formattedTime = currentDateTime.toLocaleTimeString();
+  // Function to handle removing a task
+  const handleDeleteTask = (taskKey) => {
+    setTasks(tasks.filter((item) => item.key !== taskKey)); // Remove task by key
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.dateText}>{formattedDate}</Text>
-      <Text style={styles.timeText}>{formattedTime}</Text>
-
-      {/* Alarm Input */}
+      {/* Input field for task */}
       <TextInput
+        placeholder="Enter Task"
         style={styles.input}
-        placeholder="Enter alarm time (HH:MM:SS)"
-        value={alarmTime}
-        onChangeText={(text) => setAlarmTime(text)}
-        keyboardType="numeric"
+        value={task}
+        onChangeText={(text) => setTask(text)}
       />
-      <Button title="Set Alarm" onPress={handleSetAlarm} />
 
-      {alarmSet && <Text style={styles.alarmText}>Alarm set for: {alarmTime}</Text>}
+      {/* Add task button */}
+      <Button title="Add Task" onPress={handleAddTask} />
+
+      {/* Display tasks */}
+      <FlatList
+        data={tasks}
+        renderItem={({ item }) => (
+          <View style={styles.taskContainer}>
+            <Text style={styles.taskText}>{item.value}</Text>
+            {/* Delete button */}
+            <TouchableOpacity onPress={() => handleDeleteTask(item.key)}>
+              <Text style={styles.deleteButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
     </View>
   );
 }
@@ -65,32 +51,34 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: 50,
+    paddingHorizontal: 20,
     backgroundColor: '#fff',
-  },
-  dateText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  timeText: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    marginBottom: 20,
   },
   input: {
     borderColor: '#000',
     borderWidth: 1,
     padding: 10,
-    width: 200,
-    textAlign: 'center',
-    fontSize: 18,
     marginBottom: 10,
-  },
-  alarmText: {
-    marginTop: 20,
     fontSize: 18,
-    color: 'green',
+    borderRadius: 5,
+  },
+  taskContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  taskText: {
+    fontSize: 18,
+  },
+  deleteButton: {
+    fontSize: 18,
+    color: 'red',
   },
 });
